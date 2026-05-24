@@ -42,7 +42,7 @@ function MenuScreen({ addToCart }) {
       </section>
 
       {/* Filter bar */}
-      <section style={{ position: 'sticky', top: 76, zIndex: 20,
+      <section className="r-menu-filterbar" style={{ position: 'sticky', top: 'var(--nav-h, 76px)', zIndex: 20,
                         background: 'rgba(238,228,204,0.92)',
                         backdropFilter: 'blur(12px) saturate(140%)',
                         WebkitBackdropFilter: 'blur(12px) saturate(140%)',

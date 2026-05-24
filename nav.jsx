@@ -4,12 +4,37 @@ function Nav({ route, cartCount = 0, paused = false }) {
   const { t, lang, setLang } = useI18n();
   const [scrolled, setScrolled] = React.useState(false);
   const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const headerRef = React.useRef(null);
+
+  // Build marker — confirms the updated files are actually being served.
+  React.useEffect(() => {
+    console.log('%cOCHAG build: drawer-fix ✓', 'color:#C2532A;font-weight:600');
+  }, []);
 
   React.useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  // The header is position:fixed, so it's out of flow — push the page down by
+  // its real height (and expose it as --nav-h for sticky sub-bars). Re-measure
+  // on resize and when the pause banner toggles, since both change the height.
+  React.useEffect(() => {
+    const apply = () => {
+      const h = headerRef.current ? headerRef.current.offsetHeight : 0;
+      document.body.style.paddingTop = h + 'px';
+      document.documentElement.style.setProperty('--nav-h', h + 'px');
+    };
+    apply();
+    window.addEventListener('resize', apply);
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(apply) : null;
+    if (ro && headerRef.current) ro.observe(headerRef.current);
+    return () => {
+      window.removeEventListener('resize', apply);
+      if (ro) ro.disconnect();
+    };
+  }, [paused, lang]);
 
   // Close drawer on route change
   React.useEffect(() => { setDrawerOpen(false); }, [route]);
@@ -27,15 +52,14 @@ function Nav({ route, cartCount = 0, paused = false }) {
   ];
 
   return (
-    <header style={{
-      position: 'sticky', top: 0, zIndex: 50,
-      background: 'rgba(238, 228, 204, 0.92)',
-      backdropFilter: 'blur(16px) saturate(160%)',
-      WebkitBackdropFilter: 'blur(16px) saturate(160%)',
+    <React.Fragment>
+    <header ref={headerRef} className="r-nav-header" style={{
+      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 90,
+      background: 'var(--bg)',
       borderBottom: scrolled ? '1px solid var(--line)' : '1px solid transparent',
       transition: 'border-color .2s',
     }}>
-      <div className="container" style={{ paddingTop: 16, paddingBottom: 16 }}>
+      <div className="container r-nav-inner" style={{ paddingTop: 16, paddingBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, justifyContent: 'space-between' }}>
 
           {/* Left: logo */}
@@ -118,11 +142,13 @@ function Nav({ route, cartCount = 0, paused = false }) {
 
       {/* Pause banner directly under nav */}
       {paused && <PauseBanner />}
-
-      {/* Mobile drawer */}
-      <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)}
-                    route={route} navItems={navItems} t={t} lang={lang} setLang={setLang} />
     </header>
+
+    {/* Mobile drawer — rendered OUTSIDE the fixed <header> so its z-index lives
+        in the root stacking context, not trapped inside the header's. */}
+    <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)}
+                  route={route} navItems={navItems} t={t} lang={lang} setLang={setLang} />
+    </React.Fragment>
   );
 }
 
@@ -130,7 +156,7 @@ function MobileDrawer({ open, onClose, route, navItems, t, lang, setLang }) {
   if (!open) return null;
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 100,
+      position: 'fixed', inset: 0, zIndex: 1000,
       background: 'rgba(31, 22, 16, 0.6)',
       backdropFilter: 'blur(4px)',
       WebkitBackdropFilter: 'blur(4px)',
@@ -141,9 +167,11 @@ function MobileDrawer({ open, onClose, route, navItems, t, lang, setLang }) {
           position: 'absolute', top: 0, right: 0, bottom: 0,
           width: 'min(380px, 86vw)',
           background: 'var(--bg)',
-          padding: '20px 24px 32px',
+          padding: '20px 24px calc(32px + env(safe-area-inset-bottom, 0px))',
           display: 'flex', flexDirection: 'column', gap: 12,
           overflow: 'auto',
+          overscrollBehavior: 'contain',
+          WebkitOverflowScrolling: 'touch',
           animation: 'ochag-drawer-in .22s cubic-bezier(.3,.7,.4,1)',
         }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>

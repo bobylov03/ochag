@@ -1,4 +1,3 @@
-
 // tweaks-panel.jsx
 // Reusable Tweaks shell + form-control helpers.
 //
@@ -55,6 +54,30 @@ const __TWEAKS_STYLE = `
     border:.5px solid rgba(255,255,255,.6);border-radius:14px;
     box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 12px 40px rgba(0,0,0,.18);
     font:11.5px/1.4 ui-sans-serif,system-ui,-apple-system,sans-serif;overflow:hidden}
+  /* Mobile: pin to the bottom edge, span (almost) full width, cap the height so
+     the panel can never cover the whole screen or overflow off-canvas. The host
+     still controls open/close; this only changes geometry on small viewports. */
+  @media (max-width:600px){
+    .twk-panel{
+      left:8px !important;right:8px !important;
+      bottom:calc(8px + env(safe-area-inset-bottom,0px)) !important;
+      top:auto !important;width:auto !important;
+      max-height:min(62vh,62dvh) !important;
+      transform:none !important;
+      border-radius:16px}
+    .twk-hd{padding:12px 10px 12px 16px}
+    .twk-hd b{font-size:13px}
+    .twk-x{width:30px;height:30px;font-size:15px}
+    .twk-body{padding:2px 16px 16px}
+    /* bigger touch targets for the controls inside */
+    .twk-field,.twk-num{height:34px}
+    .twk-seg button{min-height:30px}
+    .twk-toggle{width:40px;height:24px}
+    .twk-toggle i{width:20px;height:20px}
+    .twk-toggle[data-on="1"] i{transform:translateX(16px)}
+    .twk-chip{height:54px}
+    .twk-btn{height:34px}
+  }
   .twk-hd{display:flex;align-items:center;justify-content:space-between;
     padding:10px 8px 10px 14px;cursor:move;user-select:none}
   .twk-hd b{font-size:12px;font-weight:600;letter-spacing:.01em}
