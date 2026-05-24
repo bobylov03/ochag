@@ -444,6 +444,9 @@ function ConfiguratorCards({ kcal, setKcal, days, setDays, kcalOpt, durOpt, excl
             </div>
           </div>
         </StepShell>
+
+        {/* Step 3: What's in the ration — week menu preview */}
+        <RationWeekPreview excludedDays={excludedDays} />
       </div>
 
       {/* Right column: summary */}
@@ -452,6 +455,112 @@ function ConfiguratorCards({ kcal, setKcal, days, setDays, kcalOpt, durOpt, excl
                           subtotal={subtotal} discount={discount} delivery={delivery} total={total}
                           onSubmit={onSubmit} />
     </div>
+  );
+}
+
+// Week-menu preview (used inside the configurator)
+function RationWeekPreview({ excludedDays = [] }) {
+  const { t, lang } = useI18n();
+  const dishKey = lang === 'ge' ? 'name_ge' : (lang === 'en' ? 'name_en' : 'name_ru');
+  const dayLabels = DAY_LABELS_SHORT[lang === 'ge' ? 'ge' : (lang === 'en' ? 'en' : 'ru')];
+
+  return (
+    <StepShell number="03" title={t('cfg.preview.title')}>
+      <p className="meta" style={{ margin: '-8px 0 16px', color: 'var(--ink-2)', fontSize: 13 }}>
+        {t('cfg.preview.sub')} · {t('cfg.preview.meals')}
+      </p>
+
+      {/* 7-day strip — horizontal scroll on mobile, grid on desktop */}
+      <div className="r-7col-wrap" style={{ position: 'relative' }}>
+        <div className="r-7col" style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8 }}>
+          {WEEK_MENU.map((day, di) => {
+            const isSkipped = excludedDays.includes(di);
+            const today = di === 0 && !isSkipped;
+            return (
+              <div key={day.day} style={{
+                background: isSkipped ? 'transparent' : (today ? 'var(--bg-deep)' : 'var(--bg-paper-2)'),
+                color: isSkipped ? 'var(--ink-3)' : (today ? 'var(--ink-paper)' : 'var(--ink)'),
+                borderRadius: 14,
+                border: '1px solid',
+                borderColor: isSkipped ? 'var(--line)' : (today ? 'transparent' : 'var(--line)'),
+                padding: 12,
+                opacity: isSkipped ? 0.55 : 1,
+                display: 'flex', flexDirection: 'column', gap: 8,
+                minHeight: 200,
+                position: 'relative',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <span className="label-mono" style={{
+                    color: isSkipped ? 'var(--ink-3)' : (today ? 'var(--ink-paper-2)' : 'var(--ink-2)'),
+                    textDecoration: isSkipped ? 'line-through' : 'none',
+                  }}>
+                    {dayLabels[di]}
+                  </span>
+                  {today && (
+                    <span style={{
+                      padding: '2px 8px', borderRadius: 999,
+                      background: 'var(--terra)', color: '#F6EFDC',
+                      fontSize: 9, fontFamily: 'var(--ff-mono)', letterSpacing: '0.08em',
+                    }}>NOW</span>
+                  )}
+                </div>
+
+                {isSkipped ? (
+                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                fontSize: 11, fontFamily: 'var(--ff-mono)', letterSpacing: '0.08em',
+                                color: 'var(--ink-3)', textAlign: 'center', padding: '20px 4px' }}>
+                    {t('cfg.days.skip').toUpperCase()}
+                  </div>
+                ) : (
+                  <ul style={{ listStyle: 'none', margin: 0, padding: 0,
+                                display: 'flex', flexDirection: 'column', gap: 6,
+                                fontSize: 12, lineHeight: 1.3 }}>
+                    {day.dishes.map((id, i) => {
+                      const dish = DISHES.find(d => d.id === id);
+                      if (!dish) return null;
+                      const mealLabel = ['BR', 'SN', 'LN', 'SN', 'DN'][i] || '';
+                      return (
+                        <li key={id} style={{
+                          display: 'grid',
+                          gridTemplateColumns: '20px 1fr',
+                          gap: 6,
+                          alignItems: 'baseline',
+                        }}>
+                          <span style={{
+                            fontFamily: 'var(--ff-mono)', fontSize: 9,
+                            color: today ? 'var(--terra)' : 'var(--ink-3)',
+                            letterSpacing: '0.04em',
+                          }}>{mealLabel}</span>
+                          <span style={{
+                            color: today ? 'var(--ink-paper)' : 'var(--ink)',
+                          }}>{dish[dishKey]}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        {/* Scroll affordance for mobile */}
+        <div className="r-scroll-fade r-show-mobile" aria-hidden="true" style={{
+          position: 'absolute', top: 0, bottom: 12, right: 0,
+          width: 48, pointerEvents: 'none',
+          background: 'linear-gradient(to right, transparent, var(--bg-paper))',
+        }} />
+        <div className="r-scroll-hint r-show-mobile" aria-hidden="true" style={{
+          position: 'absolute', bottom: -6, left: '50%', transform: 'translateX(-50%)',
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          padding: '4px 12px', borderRadius: 999,
+          background: 'rgba(34,25,17,0.06)',
+          fontSize: 10, fontFamily: 'var(--ff-mono)', letterSpacing: '0.08em',
+          color: 'var(--ink-2)',
+        }}>
+          ← swipe
+        </div>
+      </div>
+    </StepShell>
   );
 }
 
