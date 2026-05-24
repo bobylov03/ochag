@@ -51,7 +51,7 @@ function AboutScreen() {
         background: 'var(--bg-deep)', color: 'var(--ink-paper)',
       }}>
         <div className="container">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 64, marginBottom: 56 }}>
+          <div className="r-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 64, marginBottom: 56 }}>
             <div>
               <Eyebrow>{t('about.values.title')}</Eyebrow>
               <h2 className="display" style={{

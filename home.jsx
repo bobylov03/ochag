@@ -707,7 +707,7 @@ function WeekMenu() {
   return (
     <section style={{ paddingTop: 80, paddingBottom: 80, background: 'var(--bg-paper)', borderTop: '1px solid var(--line)', borderBottom: '1px solid var(--line)' }}>
       <div className="container">
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'end', marginBottom: 48 }}>
+        <div className="r-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'end', marginBottom: 48 }}>
           <div>
             <Eyebrow>{t('week.eyebrow')}</Eyebrow>
             <h2 className="display" style={{ fontSize: 'clamp(40px, 5.6vw, 84px)', margin: '20px 0 0', lineHeight: 0.96, fontWeight: 500 }}>

@@ -75,7 +75,7 @@ function Footer() {
         {/* Social */}
         <div style={{ marginTop: 56, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
           <span className="eyebrow" style={{ color: 'var(--ink-paper-2)' }}>Find us</span>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="r-footer-socials" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <SocialPill href="https://instagram.com/ochag_tbilisi" label="Instagram" handle="@ochag_tbilisi" />
             <SocialPill href="#" label="Facebook" handle="ochag.tbilisi" />
             <SocialPill href="https://wa.me/995555515856" label="WhatsApp" handle="+995 555 515 856" />
@@ -134,7 +134,7 @@ function SocialPill({ href, label, handle }) {
       fontSize: 13,
     }}>
       <span style={{ fontWeight: 500 }}>{label}</span>
-      <span style={{ color: 'var(--ink-paper-2)', fontSize: 12 }}>{handle}</span>
+      <span className="r-pill-handle" style={{ color: 'var(--ink-paper-2)', fontSize: 12 }}>{handle}</span>
     </a>
   );
 }

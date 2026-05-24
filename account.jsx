@@ -147,7 +147,7 @@ function OrdersTab({ u, active }) {
           <span className="label-mono" style={{ color: 'var(--ink-paper-2)' }}>
             {lang === 'en' ? "Today's meals" : (lang === 'ge' ? 'დღევანდელი კერძები' : 'Сегодня в коробке')}
           </span>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginTop: 12 }}>
+          <div className="r-meals" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginTop: 12 }}>
             {WEEK_MENU[0].dishes.map(id => {
               const dish = DISHES.find(d => d.id === id);
               if (!dish) return null;

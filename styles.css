@@ -74,6 +74,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 img { max-width: 100%; display: block; }
 button { font: inherit; color: inherit; }
@@ -342,9 +344,9 @@ input, textarea, select { font: inherit; color: inherit; }
   .r-nav-pills { display: none !important; }
   .r-nav-account-label { display: none !important; }
   .r-nav-locale { display: none !important; }
+  .r-lang { display: none !important; }
   .r-show-mobile { display: inline-flex !important; }
   .r-hide-mobile { display: none !important; }
-  .r-lang { font-size: 10.5px !important; padding: 2px !important; }
 
   /* All major grids collapse */
   .r-2col, .r-3col, .r-4col { grid-template-columns: 1fr !important; }
@@ -352,6 +354,7 @@ input, textarea, select { font: inherit; color: inherit; }
 
   /* Configurator step cards: 6 duration tiles in 2 rows of 3 */
   .r-6dur { grid-template-columns: repeat(3, 1fr) !important; }
+  .r-meals { grid-template-columns: repeat(3, 1fr) !important; }
 
   /* Week menu: scroll horizontally */
   .r-7col {
@@ -394,8 +397,10 @@ input, textarea, select { font: inherit; color: inherit; }
   .r-cart-row .r-cart-controls { grid-column: 1 / -1; justify-content: space-between; margin-top: 8px; padding-top: 12px; border-top: 1px dashed var(--line); }
 
   /* Footer wordmark / contact card padding */
-  .r-footer-contact { padding: 18px !important; }
+  .r-footer-contact { padding: 18px !important; max-width: 100% !important; align-self: stretch; }
   .r-footer-newsletter { padding: 24px !important; }
+  .r-pill-handle { display: none !important; }
+  .r-footer-socials { flex-wrap: wrap !important; }
 
   /* About page hero grid */
   .r-about-stats { grid-template-columns: 1fr !important; padding-left: 0 !important; border-left: 0 !important; padding-top: 24px; border-top: 1px solid var(--line); }
@@ -410,6 +415,7 @@ input, textarea, select { font: inherit; color: inherit; }
   :root { --container-px: 16px; }
   .r-3col, .r-4col, .r-footer-cols { grid-template-columns: 1fr !important; }
   .r-6dur { grid-template-columns: repeat(3, 1fr) !important; }
+  .r-meals { grid-template-columns: repeat(3, 1fr) !important; }
   .r-7col > * { flex: 0 0 78%; }
   .display { letter-spacing: -0.018em !important; }
 }

@@ -167,7 +167,7 @@ function StepContact({ data, update, t, next }) {
       <h2 className="display" style={{ fontSize: 32, margin: 0, fontWeight: 500 }}>{t('ck.step.contact')}</h2>
 
       <Field label={t('ck.name')} value={data.name} onChange={(v) => update('name', v)} placeholder="Анна" />
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <div className="r-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         <Field label={t('ck.phone')} value={data.phone} onChange={(v) => update('phone', v)} placeholder="+995 ..." />
         <Field label={t('ck.email')} value={data.email} onChange={(v) => update('email', v)} placeholder="anna@..." />
       </div>
