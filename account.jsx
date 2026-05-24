@@ -332,7 +332,7 @@ function ProfileTab({ u }) {
   return (
     <div className="card" style={{ padding: 36, maxWidth: 640 }}>
       <span className="label-mono">{t('acc.tab.profile')}</span>
-      <div style={{ marginTop: 24, display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
+      <div className="r-2col" style={{ marginTop: 24, display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
         <Field label={t('ck.name')} value={u.name} onChange={() => {}} />
         <Field label={t('ck.phone')} value={u.phone} onChange={() => {}} />
         <Field label={t('ck.email')} value={u.email} onChange={() => {}} />
@@ -381,7 +381,7 @@ function ReferralsTab({ u }) {
 
       <article className="card" style={{ padding: 32 }}>
         <span className="label-mono">{lang === 'en' ? 'Your invites' : 'Приглашения'}</span>
-        <div style={{ marginTop: 20, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div className="r-2col" style={{ marginTop: 20, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           <Stat value="4" label={lang === 'en' ? 'Friends joined' : 'Друзей пришло'} accent />
           <Stat value="40 ₾" label={lang === 'en' ? 'Earned in credit' : 'Заработано'} />
         </div>

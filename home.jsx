@@ -82,7 +82,7 @@ function HeroTypographic() {
           {t('hero.title.1')}{' '}<em className="display-italic" style={{ color: 'var(--terra)' }}>{t('hero.title.2')}</em>{' '}{t('hero.title.3')}.
         </h1>
 
-        <div style={{
+        <div className="r-3col" style={{
           marginTop: 56,
           display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 24,
           alignItems: 'end',
@@ -110,10 +110,10 @@ function HeroSplit() {
   return (
     <section style={{ paddingTop: 32, paddingBottom: 64 }}>
       <div className="container-wide">
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0,
+        <div className="r-hero" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0,
                       borderRadius: 24, overflow: 'hidden',
                       background: 'var(--bg-deep)', color: 'var(--ink-paper)' }}>
-          <div style={{ padding: '64px 56px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 640 }}>
+          <div className="r-hero-split-pad" style={{ padding: '64px 56px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 640 }}>
             <Eyebrow>{t('hero.eyebrow')}</Eyebrow>
             <div>
               <h1 className="display" style={{
@@ -161,7 +161,7 @@ function Ribbon() {
   return (
     <section style={{ paddingTop: 24, paddingBottom: 24 }}>
       <div className="container">
-        <div style={{
+        <div className="r-ribbon" style={{
           display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0,
           border: '1px solid var(--line)',
           borderRadius: 999,
@@ -573,8 +573,8 @@ function ConfiguratorDial({ kcal, setKcal, days, setDays, kcalOpt, durOpt, exclu
   const tickAngles = [-60, 0, 60];
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-      <div className="card" style={{ padding: 40, position: 'relative' }}>
+    <div className="r-cfg" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+      <div className="card r-step" style={{ padding: 40, position: 'relative' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
           <span className="label-mono">{t('cfg.step.1')}</span>
           <span className="meta">{t('cfg.kcal.meals')}</span>
@@ -651,7 +651,7 @@ function ConfiguratorDial({ kcal, setKcal, days, setDays, kcalOpt, durOpt, exclu
 function ConfiguratorForm({ kcal, setKcal, days, setDays, kcalOpt, durOpt, excludedDays, toggleDay, calendarDays, subtotal, discount, delivery, total, onSubmit }) {
   const { t, lang } = useI18n();
   return (
-    <div className="card" style={{ padding: 32, display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 32 }}>
+    <div className="card r-cfg" style={{ padding: 32, display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 32 }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
         <div>
           <span className="field-label">{t('cfg.step.1')}</span>
@@ -669,7 +669,7 @@ function ConfiguratorForm({ kcal, setKcal, days, setDays, kcalOpt, durOpt, exclu
         </div>
         <div>
           <span className="field-label">{t('cfg.step.2')}</span>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 6 }}>
+          <div className="r-6dur" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 6 }}>
             {DURATION_OPTIONS.map(d => (
               <button key={d.days} onClick={() => setDays(d.days)}
                 style={{
@@ -738,7 +738,7 @@ function ConfiguratorSummary({ kcal, kcalOpt, days, durOpt, excludedDays = [], t
       {showDuration && (
         <div style={{ marginTop: 28 }}>
           <span className="label-mono" style={{ color: 'var(--ink-paper-2)' }}>{t('cfg.step.2')}</span>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 6, marginTop: 10 }}>
+          <div className="r-6dur" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 6, marginTop: 10 }}>
             {DURATION_OPTIONS.map(d => (
               <button key={d.days} onClick={() => setDays(d.days)}
                 style={{
@@ -777,7 +777,7 @@ function ConfiguratorSummary({ kcal, kcalOpt, days, durOpt, excludedDays = [], t
       {showDayPicker && toggleDay && (
         <div style={{ marginTop: 18 }}>
           <span className="label-mono" style={{ color: 'var(--ink-paper-2)' }}>{t('cfg.days.label')}</span>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, marginTop: 10 }}>
+          <div className="r-daypicker" style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, marginTop: 10 }}>
             {dayLabels.map((label, idx) => {
               const skipped = excludedDays.includes(idx);
               return (

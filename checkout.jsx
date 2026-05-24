@@ -189,7 +189,7 @@ function StepDelivery({ data, update, t, next, back }) {
 
       <div>
         <span className="field-label">{t('ck.window')}</span>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+        <div className="r-3col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
           {[t('ck.window.1'), t('ck.window.2'), t('ck.window.3')].map(w => (
             <button key={w} onClick={() => update('window', w)}
               style={{

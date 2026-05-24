@@ -341,6 +341,27 @@ input, textarea, select { font: inherit; color: inherit; }
   :root { --container-px: 20px; --section-y: 56px; }
   .container, .container-wide { max-width: 100%; }
 
+  /* Ribbon: stacks 2-up on tablet, 1-up on phone (handled in 480 block).
+     Replace right borders with bottom borders so the bare edges don't show. */
+  .r-ribbon {
+    grid-template-columns: 1fr 1fr !important;
+    border-radius: 16px !important;
+  }
+  .r-ribbon > * {
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--line);
+    padding: 12px 14px !important;
+    font-size: 13px !important;
+  }
+  .r-ribbon > *:nth-last-child(-n+2) { border-bottom: 0; }
+
+  /* HeroSplit inner padding shrinks dramatically and no longer requires
+     a tall min-height (image and text stack via .r-hero) */
+  .r-hero-split-pad {
+    padding: 32px 24px !important;
+    min-height: 0 !important;
+  }
+
   /* Nav: hide centered pills, hide cart count text */
   .r-nav-pills { display: none !important; }
   .r-nav-account-label { display: none !important; }
@@ -432,6 +453,9 @@ input, textarea, select { font: inherit; color: inherit; }
 @media (max-width: 480px) {
   :root { --container-px: 16px; }
   .r-3col, .r-4col, .r-footer-cols { grid-template-columns: 1fr !important; }
+  .r-ribbon { grid-template-columns: 1fr !important; }
+  .r-ribbon > * { border-bottom: 1px solid var(--line); }
+  .r-ribbon > *:last-child { border-bottom: 0 !important; }
   .r-6dur { grid-template-columns: repeat(3, 1fr) !important; }
   .r-meals { grid-template-columns: repeat(3, 1fr) !important; }
   .r-7col > * { flex: 0 0 78%; }
