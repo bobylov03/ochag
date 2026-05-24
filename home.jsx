@@ -186,11 +186,19 @@ function Ribbon() {
 }
 
 // ─────────────────────────── CONFIGURATOR ───────────────────────────
+// Short day labels per locale (Mon-first index 0..6)
+const DAY_LABELS_SHORT = {
+  ru: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+  en: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  ge: ['ორშ', 'სამ', 'ოთხ', 'ხუთ', 'პარ', 'შაბ', 'კვი'],
+};
+
 function RationConfigurator({ variant = 'cards', addToCart }) {
   const { t, lang } = useI18n();
   const [kcal, setKcal] = React.useState(2200);
   const [days, setDays] = React.useState(14);
-  const [skipWeekends, setSkipWeekends] = React.useState(false);
+  // excludedDays: array of day indices (0=Mon .. 6=Sun) to skip
+  const [excludedDays, setExcludedDays] = React.useState([]);
 
   const kcalOpt = KCAL_OPTIONS.find(k => k.id === kcal);
   const durOpt = DURATION_OPTIONS.find(d => d.days === days);
@@ -201,16 +209,31 @@ function RationConfigurator({ variant = 'cards', addToCart }) {
   const delivery = durOpt.delivery;
   const total = Math.round(subtotal - discountRaw + delivery);
 
-  // If skipping weekends, the same N delivered days span more calendar days
-  // (5 weekdays per week, +2 days off for each completed work-week).
-  const calendarDays = skipWeekends ? days + Math.floor((days - 1) / 5) * 2 : days;
+  // Calendar-days math when some weekdays are skipped:
+  // each delivered "block" of (7 - excluded.length) weekdays takes 7 calendar days
+  const skippedCount = excludedDays.length;
+  const calendarDays = skippedCount > 0
+    ? days + Math.floor((days - 1) / Math.max(1, 7 - skippedCount)) * skippedCount
+    : days;
+
+  const toggleDay = (idx) => {
+    setExcludedDays((curr) => {
+      if (curr.includes(idx)) return curr.filter(d => d !== idx);
+      // Don't allow excluding ALL 7 days
+      if (curr.length >= 6) return curr;
+      return [...curr, idx].sort((a, b) => a - b);
+    });
+  };
 
   const placeOrder = () => {
-    const suffix = skipWeekends ? ` (${t('cfg.weekends.label').toLowerCase()})` : '';
+    const skipLabels = excludedDays.map(i => DAY_LABELS_SHORT[lang === 'ge' ? 'ge' : (lang === 'en' ? 'en' : 'ru')][i]);
+    const suffix = skipLabels.length > 0 ? ` (${t('cfg.days.skip').toLowerCase()}: ${skipLabels.join(', ')})` : '';
     addToCart({
-      type: 'ration', id: `ration-${kcal}-${days}${skipWeekends ? '-skipwk' : ''}`,
+      type: 'ration',
+      id: `ration-${kcal}-${days}${excludedDays.length ? '-skip-' + excludedDays.join('') : ''}`,
       name: `${kcalOpt.id} ккал × ${days} ${pluralDays(days, lang)}${suffix}`,
       price: total, qty: 1,
+      meta: { kcal, days, excludedDays, calendarDays },
     });
     window.location.hash = '#/cart';
   };
@@ -222,7 +245,7 @@ function RationConfigurator({ variant = 'cards', addToCart }) {
         {/* Section header */}
         <div style={{ marginBottom: 48 }}>
           <Eyebrow>{t('cfg.eyebrow')}</Eyebrow>
-          <h2 className="display" style={{
+          <h2 className="display r-hero-title" style={{
             fontSize: 'clamp(40px, 5.6vw, 84px)',
             margin: '20px 0 0', lineHeight: 0.96, fontWeight: 500,
           }}>
@@ -234,19 +257,19 @@ function RationConfigurator({ variant = 'cards', addToCart }) {
         {variant === 'dial' ? (
           <ConfiguratorDial kcal={kcal} setKcal={setKcal} days={days} setDays={setDays}
                             kcalOpt={kcalOpt} durOpt={durOpt}
-                            skipWeekends={skipWeekends} setSkipWeekends={setSkipWeekends} calendarDays={calendarDays}
+                            excludedDays={excludedDays} toggleDay={toggleDay} calendarDays={calendarDays}
                             subtotal={subtotal} discount={discount} delivery={delivery} total={total}
                             onSubmit={placeOrder} />
         ) : variant === 'form' ? (
           <ConfiguratorForm kcal={kcal} setKcal={setKcal} days={days} setDays={setDays}
                             kcalOpt={kcalOpt} durOpt={durOpt}
-                            skipWeekends={skipWeekends} setSkipWeekends={setSkipWeekends} calendarDays={calendarDays}
+                            excludedDays={excludedDays} toggleDay={toggleDay} calendarDays={calendarDays}
                             subtotal={subtotal} discount={discount} delivery={delivery} total={total}
                             onSubmit={placeOrder} />
         ) : (
           <ConfiguratorCards kcal={kcal} setKcal={setKcal} days={days} setDays={setDays}
                              kcalOpt={kcalOpt} durOpt={durOpt}
-                             skipWeekends={skipWeekends} setSkipWeekends={setSkipWeekends} calendarDays={calendarDays}
+                             excludedDays={excludedDays} toggleDay={toggleDay} calendarDays={calendarDays}
                              subtotal={subtotal} discount={discount} delivery={delivery} total={total}
                              onSubmit={placeOrder} />
         )}
@@ -264,8 +287,9 @@ function pluralDays(n, lang) {
 }
 
 // ─── Cards variant (default) ───────────────────────────────────────────────
-function ConfiguratorCards({ kcal, setKcal, days, setDays, kcalOpt, durOpt, skipWeekends, setSkipWeekends, calendarDays, subtotal, discount, delivery, total, onSubmit }) {
+function ConfiguratorCards({ kcal, setKcal, days, setDays, kcalOpt, durOpt, excludedDays, toggleDay, calendarDays, subtotal, discount, delivery, total, onSubmit }) {
   const { t, lang } = useI18n();
+  const dayLabels = DAY_LABELS_SHORT[lang === 'ge' ? 'ge' : (lang === 'en' ? 'en' : 'ru')];
 
   return (
     <div className="r-cfg" style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 24 }}>
@@ -367,61 +391,64 @@ function ConfiguratorCards({ kcal, setKcal, days, setDays, kcalOpt, durOpt, skip
             <span>{durOpt.delivery > 0 ? t('cfg.duration.delivery.paid') : t('cfg.duration.delivery.free')}</span>
           </div>
 
-          {/* Weekend toggle */}
-          <button onClick={() => setSkipWeekends(!skipWeekends)}
-                  style={{
-                    marginTop: 16,
-                    display: 'flex', alignItems: 'center', gap: 16, width: '100%',
-                    padding: '16px 18px', borderRadius: 12,
-                    background: skipWeekends ? 'var(--bg-deep)' : 'var(--bg-paper-2)',
-                    color: skipWeekends ? 'var(--ink-paper)' : 'var(--ink)',
-                    border: '1px solid',
-                    borderColor: skipWeekends ? 'transparent' : 'var(--line)',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    transition: 'background .15s, color .15s',
-                  }}>
-            <span style={{
-              position: 'relative',
-              width: 36, height: 22, borderRadius: 999,
-              background: skipWeekends ? 'var(--terra)' : 'rgba(34,25,17,0.18)',
-              flexShrink: 0, transition: 'background .15s',
-            }}>
-              <span style={{
-                position: 'absolute', top: 2, left: 2,
-                width: 18, height: 18, borderRadius: '50%',
-                background: '#F6EFDC',
-                transform: skipWeekends ? 'translateX(14px)' : 'translateX(0)',
-                transition: 'transform .18s cubic-bezier(.3,.7,.4,1)',
-                boxShadow: '0 1px 2px rgba(0,0,0,.2)',
-              }} />
-            </span>
-            <span style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <span style={{ fontWeight: 500, fontSize: 14 }}>{t('cfg.weekends.label')}</span>
-              <span style={{ fontSize: 12,
-                             color: skipWeekends ? 'var(--ink-paper-2)' : 'var(--ink-2)' }}>
-                {t('cfg.weekends.sub')}
-              </span>
-            </span>
-            {skipWeekends && (
-              <span style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                padding: '6px 12px', borderRadius: 999,
-                background: 'rgba(241,233,216,0.08)',
-                fontFamily: 'var(--ff-mono)', fontSize: 11, letterSpacing: '0.06em',
-                color: 'var(--ink-paper)',
-                whiteSpace: 'nowrap',
-              }}>
-                {days} {t('cfg.weekends.weekdays')} · ≈ {calendarDays} {t('cfg.weekends.calendar')}
-              </span>
-            )}
-          </button>
+          {/* Day picker — exclude specific days of the week */}
+          <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px dashed var(--line)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
+              <span className="label-mono">{t('cfg.days.label')}</span>
+              <span className="meta" style={{ color: 'var(--ink-3)', fontSize: 12 }}>{t('cfg.days.sub')}</span>
+            </div>
+            <div className="r-daypicker" style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6 }}>
+              {dayLabels.map((label, idx) => {
+                const skipped = excludedDays.includes(idx);
+                const isWeekend = idx === 5 || idx === 6;
+                return (
+                  <button key={idx} onClick={() => toggleDay(idx)}
+                    style={{
+                      position: 'relative',
+                      padding: '12px 6px', borderRadius: 12,
+                      background: skipped ? 'transparent' : (isWeekend ? 'rgba(194,83,42,0.10)' : 'var(--bg-paper-2)'),
+                      border: '1px solid',
+                      borderColor: skipped ? 'var(--line)' : (isWeekend ? 'rgba(194,83,42,0.32)' : 'var(--line-2)'),
+                      color: skipped ? 'var(--ink-3)' : 'var(--ink)',
+                      cursor: 'pointer',
+                      fontFamily: 'var(--ff-mono)', fontSize: 12, fontWeight: 500,
+                      letterSpacing: '0.04em', textTransform: 'uppercase',
+                      textDecoration: skipped ? 'line-through' : 'none',
+                      textDecorationColor: skipped ? 'var(--terra)' : 'transparent',
+                      textDecorationThickness: '1.5px',
+                      transition: 'background .12s, color .12s, border-color .12s',
+                    }}>
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 10,
+                          fontSize: 13, color: 'var(--ink-2)', flexWrap: 'wrap' }}>
+              {excludedDays.length === 0 ? (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--olive)' }} />
+                  {t('cfg.days.delivering')}
+                </span>
+              ) : (
+                <>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--terra)' }} />
+                    <strong style={{ fontWeight: 500, color: 'var(--ink)' }}>{t('cfg.days.skip')}:</strong>
+                    {excludedDays.map(i => dayLabels[i]).join(', ')}
+                  </span>
+                  <span style={{ color: 'var(--ink-3)' }}>·</span>
+                  <span>{days} × {t('common.day')} · ≈ {calendarDays} {t('cfg.weekends.calendar')}</span>
+                </>
+              )}
+            </div>
+          </div>
         </StepShell>
       </div>
 
       {/* Right column: summary */}
       <ConfiguratorSummary kcal={kcal} kcalOpt={kcalOpt} days={days} durOpt={durOpt}
-                          skipWeekends={skipWeekends} calendarDays={calendarDays}
+                          excludedDays={excludedDays} calendarDays={calendarDays}
                           subtotal={subtotal} discount={discount} delivery={delivery} total={total}
                           onSubmit={onSubmit} />
     </div>
@@ -429,7 +456,7 @@ function ConfiguratorCards({ kcal, setKcal, days, setDays, kcalOpt, durOpt, skip
 }
 
 // ─── Dial variant (the "hearth dial") ─────────────────────────────────────
-function ConfiguratorDial({ kcal, setKcal, days, setDays, kcalOpt, durOpt, skipWeekends, setSkipWeekends, calendarDays, subtotal, discount, delivery, total, onSubmit }) {
+function ConfiguratorDial({ kcal, setKcal, days, setDays, kcalOpt, durOpt, excludedDays, toggleDay, calendarDays, subtotal, discount, delivery, total, onSubmit }) {
   const { t, lang } = useI18n();
   // Dial: SVG knob — rotating selects kcal tier
   const idx = KCAL_OPTIONS.findIndex(k => k.id === kcal);
@@ -503,16 +530,16 @@ function ConfiguratorDial({ kcal, setKcal, days, setDays, kcalOpt, durOpt, skipW
       </div>
 
       <ConfiguratorSummary kcal={kcal} kcalOpt={kcalOpt} days={days} durOpt={durOpt}
-                          skipWeekends={skipWeekends} setSkipWeekends={setSkipWeekends} calendarDays={calendarDays}
+                          excludedDays={excludedDays} toggleDay={toggleDay} calendarDays={calendarDays}
                           subtotal={subtotal} discount={discount} delivery={delivery} total={total}
                           onSubmit={onSubmit}
-                          showDuration setDays={setDays} showWeekendToggle />
+                          showDuration setDays={setDays} showDayPicker />
     </div>
   );
 }
 
 // ─── Compact form variant ────────────────────────────────────────────────
-function ConfiguratorForm({ kcal, setKcal, days, setDays, kcalOpt, durOpt, skipWeekends, setSkipWeekends, calendarDays, subtotal, discount, delivery, total, onSubmit }) {
+function ConfiguratorForm({ kcal, setKcal, days, setDays, kcalOpt, durOpt, excludedDays, toggleDay, calendarDays, subtotal, discount, delivery, total, onSubmit }) {
   const { t, lang } = useI18n();
   return (
     <div className="card" style={{ padding: 32, display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 32 }}>
@@ -551,9 +578,9 @@ function ConfiguratorForm({ kcal, setKcal, days, setDays, kcalOpt, durOpt, skipW
         </div>
       </div>
       <ConfiguratorSummary kcal={kcal} kcalOpt={kcalOpt} days={days} durOpt={durOpt}
-                          skipWeekends={skipWeekends} setSkipWeekends={setSkipWeekends} calendarDays={calendarDays}
+                          excludedDays={excludedDays} toggleDay={toggleDay} calendarDays={calendarDays}
                           subtotal={subtotal} discount={discount} delivery={delivery} total={total}
-                          onSubmit={onSubmit} embedded showWeekendToggle />
+                          onSubmit={onSubmit} embedded showDayPicker />
     </div>
   );
 }
@@ -576,8 +603,9 @@ function StepShell({ number, title, children }) {
 }
 
 // ─── Summary card (shared) ───────────────────────────────────────────────
-function ConfiguratorSummary({ kcal, kcalOpt, days, durOpt, skipWeekends, setSkipWeekends, calendarDays, subtotal, discount, delivery, total, onSubmit, embedded = false, showDuration = false, setDays, showWeekendToggle = false }) {
+function ConfiguratorSummary({ kcal, kcalOpt, days, durOpt, excludedDays = [], toggleDay, calendarDays, subtotal, discount, delivery, total, onSubmit, embedded = false, showDuration = false, setDays, showDayPicker = false }) {
   const { t, lang } = useI18n();
+  const dayLabels = DAY_LABELS_SHORT[lang === 'ge' ? 'ge' : (lang === 'en' ? 'en' : 'ru')];
 
   const card = (
     <>
@@ -630,39 +658,37 @@ function ConfiguratorSummary({ kcal, kcalOpt, days, durOpt, skipWeekends, setSki
           <SummaryRow label={`${t('cfg.summary.discount')} −${Math.round((durOpt.discount || 0) * 100)}%`} value={`−${Math.round(discount)} ₾`} accent />
         )}
         <SummaryRow label={t('cart.delivery')} value={delivery > 0 ? `${delivery} ₾` : t('cart.delivery.free')} />
-        {skipWeekends && (
-          <SummaryRow label={t('cfg.weekends.label')} value={`≈ ${calendarDays} ${t('cfg.weekends.calendar')}`} />
+        {excludedDays.length > 0 && (
+          <SummaryRow label={`${t('cfg.days.skip')}: ${excludedDays.map(i => dayLabels[i]).join(', ')}`}
+                       value={`≈ ${calendarDays} ${t('cfg.weekends.calendar')}`} />
         )}
       </div>
 
-      {/* Optional inline weekend toggle (for dial/form variants) */}
-      {showWeekendToggle && setSkipWeekends && (
-        <button onClick={() => setSkipWeekends(!skipWeekends)}
-                style={{
-                  marginTop: 16,
-                  display: 'flex', alignItems: 'center', gap: 12, width: '100%',
-                  padding: '12px 14px', borderRadius: 12,
-                  background: 'rgba(241,233,216,0.06)',
-                  border: '1px solid var(--line-paper)',
-                  color: 'var(--ink-paper)',
-                  cursor: 'pointer', textAlign: 'left',
-                }}>
-          <span style={{
-            position: 'relative',
-            width: 32, height: 19, borderRadius: 999,
-            background: skipWeekends ? 'var(--terra)' : 'rgba(241,233,216,0.18)',
-            flexShrink: 0,
-          }}>
-            <span style={{
-              position: 'absolute', top: 2, left: 2,
-              width: 15, height: 15, borderRadius: '50%',
-              background: '#F6EFDC',
-              transform: skipWeekends ? 'translateX(13px)' : 'translateX(0)',
-              transition: 'transform .18s cubic-bezier(.3,.7,.4,1)',
-            }} />
-          </span>
-          <span style={{ fontSize: 13, fontWeight: 500 }}>{t('cfg.weekends.label')}</span>
-        </button>
+      {/* Optional inline day picker (for dial/form variants) */}
+      {showDayPicker && toggleDay && (
+        <div style={{ marginTop: 18 }}>
+          <span className="label-mono" style={{ color: 'var(--ink-paper-2)' }}>{t('cfg.days.label')}</span>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, marginTop: 10 }}>
+            {dayLabels.map((label, idx) => {
+              const skipped = excludedDays.includes(idx);
+              return (
+                <button key={idx} onClick={() => toggleDay(idx)}
+                  style={{
+                    padding: '8px 4px', borderRadius: 8,
+                    background: skipped ? 'transparent' : 'rgba(241,233,216,0.08)',
+                    border: '1px solid var(--line-paper)',
+                    color: skipped ? 'var(--ink-paper-2)' : 'var(--ink-paper)',
+                    cursor: 'pointer',
+                    fontFamily: 'var(--ff-mono)', fontSize: 11, letterSpacing: '0.04em',
+                    textDecoration: skipped ? 'line-through' : 'none',
+                    textDecorationColor: 'var(--terra)',
+                  }}>
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       )}
 
       <button onClick={onSubmit} className="btn btn-primary btn-lg" style={{ marginTop: 28, width: '100%', justifyContent: 'space-between' }}>
@@ -723,7 +749,8 @@ function WeekMenu() {
         </div>
 
         {/* 7-day strip */}
-        <div className="r-7col" style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 10 }}>
+        <div className="r-7col-wrap" style={{ position: 'relative' }}>
+          <div className="r-7col" style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 10 }}>
           {WEEK_MENU.map((day, di) => {
             const lead = DISHES.find(d => d.id === day.dishes[0]); // main dish
             const today = di === 0;
@@ -757,6 +784,24 @@ function WeekMenu() {
               </div>
             );
           })}
+        </div>
+        {/* Scroll affordance (mobile only): fade hint on the right edge */}
+        <div className="r-scroll-fade r-show-mobile" aria-hidden="true" style={{
+          position: 'absolute', top: 0, bottom: 12, right: 0,
+          width: 56, pointerEvents: 'none',
+          background: 'linear-gradient(to right, transparent, var(--bg-paper))',
+        }} />
+        {/* Scroll dots hint on mobile */}
+        <div className="r-scroll-hint r-show-mobile" aria-hidden="true" style={{
+          position: 'absolute', bottom: -4, left: '50%', transform: 'translateX(-50%)',
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          padding: '6px 14px', borderRadius: 999,
+          background: 'rgba(34,25,17,0.06)',
+          fontSize: 11, fontFamily: 'var(--ff-mono)', letterSpacing: '0.08em',
+          color: 'var(--ink-2)',
+        }}>
+          ← swipe
+        </div>
         </div>
       </div>
     </section>

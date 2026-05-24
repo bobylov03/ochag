@@ -14,7 +14,7 @@ function AccountScreen() {
         <div className="container">
           <Eyebrow>{t('nav.account')}</Eyebrow>
 
-          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginTop: 24, marginBottom: 48 }}>
+          <div className="r-flex-stack" style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginTop: 24, marginBottom: 48 }}>
             <h1 className="display" style={{
               fontSize: 'clamp(48px, 6vw, 96px)',
               margin: 0, lineHeight: 0.96, fontWeight: 500,

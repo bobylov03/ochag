@@ -47,7 +47,7 @@ function CartScreen({ cart, updateCart, removeFromCart }) {
       <section style={{ paddingTop: 56, paddingBottom: 80 }}>
         <div className="container">
           <Eyebrow>{t('cart.title')}</Eyebrow>
-          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginTop: 24, marginBottom: 48 }}>
+          <div className="r-flex-stack" style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginTop: 24, marginBottom: 48 }}>
             <h1 className="display" style={{
               fontSize: 'clamp(48px, 6vw, 96px)',
               margin: 0, lineHeight: 0.96, fontWeight: 500,
@@ -148,6 +148,8 @@ function CartScreen({ cart, updateCart, removeFromCart }) {
 function CartRow({ item, onChange, onRemove }) {
   const { t, lang } = useI18n();
   const isRation = item.type === 'ration';
+  const [expanded, setExpanded] = React.useState(false);
+  const dishKey = lang === 'ge' ? 'name_ge' : (lang === 'en' ? 'name_en' : 'name_ru');
 
   return (
     <article className="r-cart-row" style={{
@@ -169,9 +171,22 @@ function CartRow({ item, onChange, onRemove }) {
           {item.name}
         </h3>
         {isRation && (
-          <span className="meta">
-            {lang === 'en' ? 'Includes delivery, weekly menu, 5 meals/day' : 'Доставка, меню недели, 5 приёмов пищи'}
-          </span>
+          <button onClick={() => setExpanded(!expanded)}
+                  style={{
+                    marginTop: 6, alignSelf: 'flex-start',
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    padding: '6px 12px', borderRadius: 999,
+                    background: 'transparent',
+                    border: '1px solid var(--line-2)',
+                    color: 'var(--ink)', cursor: 'pointer',
+                    fontSize: 12, fontWeight: 500,
+                  }}>
+            <span style={{
+              display: 'inline-block', transition: 'transform .2s',
+              transform: expanded ? 'rotate(180deg)' : 'rotate(0)',
+            }}>{Icons.arrowDown(10)}</span>
+            {expanded ? t('cart.ration.hide') : t('cart.ration.shows')}
+          </button>
         )}
       </div>
 
@@ -213,6 +228,54 @@ function CartRow({ item, onChange, onRemove }) {
           {Icons.close(12)}
         </button>
       </div>
+
+      {/* Expanded ration details */}
+      {isRation && expanded && (
+        <div style={{
+          gridColumn: '1 / -1',
+          marginTop: 8,
+          paddingTop: 16,
+          borderTop: '1px dashed var(--line)',
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
+            <span className="label-mono">{t('cart.ration.menu_week')}</span>
+            <RouteLink to="menu" className="meta" style={{
+              color: 'var(--terra)', display: 'inline-flex', alignItems: 'center', gap: 6,
+              fontWeight: 500,
+            }}>
+              {t('week.viewall')} {Icons.arrowRight(11)}
+            </RouteLink>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {WEEK_MENU.map((day) => (
+              <div key={day.day} style={{
+                display: 'grid', gridTemplateColumns: '60px 1fr', gap: 16,
+                padding: '10px 0',
+                borderBottom: '1px dashed var(--line)',
+              }}>
+                <span className="label-mono" style={{ alignSelf: 'start', paddingTop: 2 }}>
+                  {t(`week.day.${day.day}`).slice(0, 3).toUpperCase()}
+                </span>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, fontSize: 13 }}>
+                  {day.dishes.map((id, i) => {
+                    const dish = DISHES.find(d => d.id === id);
+                    if (!dish) return null;
+                    return (
+                      <span key={id} style={{ display: 'inline-flex', alignItems: 'center' }}>
+                        <span>{dish[dishKey]}</span>
+                        {i < day.dishes.length - 1 && (
+                          <span style={{ color: 'var(--ink-3)', margin: '0 6px' }}>·</span>
+                        )}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </article>
   );
 }

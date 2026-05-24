@@ -29,11 +29,11 @@ function Nav({ route, cartCount = 0, paused = false }) {
   return (
     <header style={{
       position: 'sticky', top: 0, zIndex: 50,
-      background: scrolled ? 'rgba(238, 228, 204, 0.88)' : 'transparent',
-      backdropFilter: scrolled ? 'blur(16px) saturate(140%)' : 'none',
-      WebkitBackdropFilter: scrolled ? 'blur(16px) saturate(140%)' : 'none',
+      background: 'rgba(238, 228, 204, 0.92)',
+      backdropFilter: 'blur(16px) saturate(160%)',
+      WebkitBackdropFilter: 'blur(16px) saturate(160%)',
       borderBottom: scrolled ? '1px solid var(--line)' : '1px solid transparent',
-      transition: 'background .2s, border-color .2s, backdrop-filter .2s',
+      transition: 'border-color .2s',
     }}>
       <div className="container" style={{ paddingTop: 16, paddingBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, justifyContent: 'space-between' }}>
